@@ -3,7 +3,8 @@ import { LockManager } from 'mongo-locks'
 
 import {
   OCR_REGISTRATION_COLLECTION,
-  EMAIL_VERIFICATION_COLLECTION
+  EMAIL_VERIFICATION_COLLECTION,
+  EMAIL_VERIFICATION_RATE_LIMIT_COLLECTION
 } from '#/common/constants/collections.js'
 import {
   JOURNEY_STARTS_COLLECTION,
@@ -51,7 +52,7 @@ async function createIndexes(db) {
   const registrations = db.collection(OCR_REGISTRATION_COLLECTION)
   const emailVerifications = db.collection(EMAIL_VERIFICATION_COLLECTION)
   const emailVerificationRateLimits = db.collection(
-    'email-verification-rate-limits'
+    EMAIL_VERIFICATION_RATE_LIMIT_COLLECTION
   )
 
   await db.collection('mongo-locks').createIndex({ id: 1 })
