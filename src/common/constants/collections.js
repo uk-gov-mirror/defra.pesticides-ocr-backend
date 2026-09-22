@@ -2,3 +2,4 @@
 // not duplicated as a magic string across services and plugins.
 
 export const OCR_REGISTRATION_COLLECTION = 'ocr-registration'
+export const EMAIL_VERIFICATION_COLLECTION = 'email-verifications'

@@ -1,7 +1,10 @@
 import { MongoClient } from 'mongodb'
 import { LockManager } from 'mongo-locks'
 
-import { OCR_REGISTRATION_COLLECTION } from '#/common/constants/collections.js'
+import {
+  OCR_REGISTRATION_COLLECTION,
+  EMAIL_VERIFICATION_COLLECTION
+} from '#/common/constants/collections.js'
 import {
   JOURNEY_STARTS_COLLECTION,
   JOURNEY_NOT_ELIGIBLE_COLLECTION
@@ -46,6 +49,10 @@ export const mongoDb = {
 
 async function createIndexes(db) {
   const registrations = db.collection(OCR_REGISTRATION_COLLECTION)
+  const emailVerifications = db.collection(EMAIL_VERIFICATION_COLLECTION)
+  const emailVerificationRateLimits = db.collection(
+    'email-verification-rate-limits'
+  )
 
   await db.collection('mongo-locks').createIndex({ id: 1 })
   await registrations.createIndex({ submittedAt: 1 })
@@ -62,5 +69,20 @@ async function createIndexes(db) {
   await journeyNotEligible.createIndex(
     { nonce: 1 },
     { unique: true, sparse: true }
+  )
+
+  // TTL index: the whole verification record (code/token hashes included)
+  // is deleted once expiresAt passes, regardless of status.
+  await emailVerifications.createIndex(
+    { expiresAt: 1 },
+    { expireAfterSeconds: 0 }
+  )
+  await emailVerifications.createIndex({ email: 1, createdAt: -1 })
+
+  // TTL index: fixed-window rate-limit buckets self-delete once their
+  // window has passed.
+  await emailVerificationRateLimits.createIndex(
+    { expiresAt: 1 },
+    { expireAfterSeconds: 0 }
   )
 }
